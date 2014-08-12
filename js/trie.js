@@ -42,7 +42,6 @@ var Trie = function() {
     var foundNode = node.children[character];
     if(foundNode) {
       var stop = (substring.length - 1) == 0 && foundNode.stop;
-      console.log(stop);
       if (stop) { return true; }
       return this._includes(substring.slice(1), foundNode)
     } else {
@@ -54,36 +53,53 @@ var Trie = function() {
   //
   // Returns Array of Strings.
   this.search = function(prefix) {
-
+    return this._search(prefix);
   };
 
   // Recursive function. Helper function for the search function.
-  this._search = function() {
-
+  this._search = function(prefix) {
+    var lastNode = this.findLastNode(prefix);
+    return this.iterate(prefix, lastNode);
   };
 
   // Find the node that correspond to the last character in the string.
   //
   // Returns Node.
   this.findLastNode = function(string) {
-
+    return this._findLastNode(string, this.head);
   };
 
   // Recursive function. Helper function for the findLastNode function.
-  this._findLastNode = function() {
-
+  this._findLastNode = function(string, node) {
+    var character = string.slice(0,1); // Grab the first character
+    var foundNode = node.children[character];
+    if (foundNode) {
+      var stop = (string.length - 1) == 0;
+      if (stop) { return foundNode; }
+      return this._findLastNode(string.slice(1), foundNode);
+    } else {
+      return node;
+    }
   };
 
   // Given a node, return all the strings that are part of this node.
   //
   // Returns Array of Strings.
-  this.iterate = function(node) {
-
+  this.iterate = function(prefix, node) {
+    rootString = prefix.slice(0, -1);
+    return this._iterate([], rootString, node);
   };
 
   // Recursive helper function for .iterate
-  this._iterate = function() {
+  this._iterate = function(array, rootString, node) {
+    rootString += node.value;
 
+    if (node.stop) { array.push(rootString); }
+
+    for (var i in node.children) {
+      this._iterate( array, rootString, node.children[i] );
+    }
+    return array;
   };
 
   // You may find this function useful for implementing iterate().
