@@ -38,15 +38,16 @@ var Trie = function() {
   // Recursive function. Returns true if string is in the trie. Returns false
   // otherwise.
   this._includes = function(substring, node) {
-    var character = substring.slice(0,1); // Grab the first character
-    var foundNode = node.children[character];
-    if(foundNode) {
-      var stop = (substring.length - 1) == 0 && foundNode.stop;
-      if (stop) { return true; }
-      return this._includes(substring.slice(1), foundNode)
-    } else {
-      return false;
+    if (substring) {
+      var character = substring.slice(0,1); // Grab the first character
+      var foundNode = node.children[character];
+      if(foundNode) {
+        var stop = (substring.length - 1) == 0 && foundNode.stop;
+        if (stop) { return true; }
+        return this._includes(substring.slice(1), foundNode)
+      }
     }
+    return false;
   };
 
   // Search for all strings that have 'prefix' as the prefix.
@@ -59,6 +60,7 @@ var Trie = function() {
   // Recursive function. Helper function for the search function.
   this._search = function(prefix) {
     var lastNode = this.findLastNode(prefix);
+    console.log('lastNode', lastNode);
     return this.iterate(prefix, lastNode);
   };
 
@@ -71,32 +73,48 @@ var Trie = function() {
 
   // Recursive function. Helper function for the findLastNode function.
   this._findLastNode = function(string, node) {
-    var character = string.slice(0,1); // Grab the first character
+    if (string === undefined) { return node; }
+    var character;
+    if (string){
+      character = string.slice(0,1); // Grab the first character
+    }
+
     var foundNode = node.children[character];
     if (foundNode) {
       var stop = (string.length - 1) == 0;
       if (stop) { return foundNode; }
       return this._findLastNode(string.slice(1), foundNode);
     } else {
-      return node;
+      // return node;
+      return foundNode;
     }
   };
 
   // Given a node, return all the strings that are part of this node.
   //
   // Returns Array of Strings.
-  this.iterate = function(prefix, node) {
-    rootString = prefix.slice(0, -1);
-    return this._iterate([], rootString, node);
+  this.iterate = function(node, prefix) {
+    if (node) {
+      if (prefix && prefix.length > 1) {
+        rootString = prefix.slice(0, -1);
+      } else {
+        rootString = '';
+      }
+
+      return this._iterate([], rootString, node);
+    } else {
+      return [];
+    }
   };
 
   // Recursive helper function for .iterate
   this._iterate = function(array, rootString, node) {
-    rootString += node.value;
+    if (node.value) { rootString += node.value; }
 
     if (node.stop) { array.push(rootString); }
 
     for (var i in node.children) {
+      console.log(node.children[i]);
       this._iterate( array, rootString, node.children[i] );
     }
     return array;
